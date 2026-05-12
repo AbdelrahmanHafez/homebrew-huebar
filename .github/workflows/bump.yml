@@ -1,0 +1,56 @@
+name: Bump cask
+
+on:
+  schedule:
+    - cron: "17 14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Resolve latest upstream release
+        id: upstream
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag=$(gh release view --repo jurre/huebar --json tagName --jq .tagName)
+          version="${tag#v}"
+          asset_url="https://github.com/jurre/huebar/releases/download/${tag}/HueBar.zip"
+          tmp=$(mktemp)
+          curl -fsSL "$asset_url" -o "$tmp"
+          sha=$(shasum -a 256 "$tmp" | awk '{print $1}')
+          rm -f "$tmp"
+          {
+            echo "version=$version"
+            echo "sha256=$sha"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Read current cask version
+        id: current
+        run: |
+          v=$(grep -E '^\s*version\s+' Casks/huebar.rb | head -1 | sed -E 's/.*"([^"]+)".*/\1/')
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Bump if needed
+        if: steps.current.outputs.version != steps.upstream.outputs.version
+        env:
+          NEW_VERSION: ${{ steps.upstream.outputs.version }}
+          NEW_SHA: ${{ steps.upstream.outputs.sha256 }}
+          OLD_VERSION: ${{ steps.current.outputs.version }}
+        run: |
+          sed -i -E "s/^(\s*version\s+)\".*\"/\1\"${NEW_VERSION}\"/" Casks/huebar.rb
+          sed -i -E "s/^(\s*sha256\s+)\".*\"/\1\"${NEW_SHA}\"/" Casks/huebar.rb
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Casks/huebar.rb
+          git commit -m "huebar ${NEW_VERSION}
+
+          Bumped from ${OLD_VERSION} to ${NEW_VERSION}.
+          See https://github.com/jurre/huebar/releases/tag/v${NEW_VERSION} for upstream notes."
+          git push
