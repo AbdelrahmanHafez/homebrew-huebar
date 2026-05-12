@@ -18,6 +18,17 @@ cask "huebar" do
 
   uninstall quit: "com.jurre.huebar"
 
+  caveats <<~EOS
+    HueBar is ad-hoc signed (no Developer ID). On first launch macOS Gatekeeper
+    may block it. To allow:
+
+      xattr -dr com.apple.quarantine /Applications/HueBar.app
+
+    Or right-click HueBar.app in /Applications and choose Open.
+
+    Signing roadmap: https://github.com/jurre/huebar/issues/36
+  EOS
+
   zap trash: [
     "~/Library/Application Support/HueBar",
     "~/Library/Caches/com.jurre.huebar",

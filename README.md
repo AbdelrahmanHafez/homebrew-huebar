@@ -45,6 +45,16 @@ brew uninstall --cask --zap huebar
 
 ## Notes
 
-- HueBar is ad-hoc signed. Homebrew strips the `com.apple.quarantine` xattr on install, so Gatekeeper does not prompt.
+- HueBar is ad-hoc signed (no Developer ID), so Homebrew applies the standard `com.apple.quarantine` xattr at install time and macOS Gatekeeper may block first launch. Two ways around it:
+
+  ```bash
+  # Option 1: install once with quarantine disabled
+  brew install --cask --no-quarantine huebar
+
+  # Option 2: install normally, then strip quarantine after each upgrade
+  xattr -dr com.apple.quarantine /Applications/HueBar.app
+  ```
+
+  Or right-click `HueBar.app` in `/Applications` and choose Open. Signing roadmap is tracked in [jurre/huebar#36](https://github.com/jurre/huebar/issues/36).
 - Requires macOS 15 (Sequoia) or later.
-- This tap is unaffiliated with upstream. See [jurre/huebar#36](https://github.com/jurre/huebar/issues/36) for context.
+- This tap is unaffiliated with upstream.
