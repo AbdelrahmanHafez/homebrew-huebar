@@ -1,6 +1,6 @@
 cask "huebar" do
-  version "0.1.17"
-  sha256 "b2722b0ca7f4ec9405c8caee333f4ace3b0a10e55820160b7efebcee4e5a5b5e"
+  version "0.1.18"
+  sha256 "3afbd272633102e0190568eb9e8dd0f7d112f4c27d2367eb9d6c4a34c93cc675"
 
   url "https://github.com/jurre/huebar/releases/download/v#{version}/HueBar.zip"
   name "HueBar"
